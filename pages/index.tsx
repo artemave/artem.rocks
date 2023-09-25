@@ -8,6 +8,10 @@ import Head from 'next/head'
 import Post from '../interfaces/post'
 import Content from '../components/content'
 import H2 from '../components/H2'
+import Link from '../components/Link'
+import Footer from '../components/footer'
+import ButtonLink from '../components/ButtonLink'
+import ButtonGroup from '../components/ButtonGroup'
 
 type Props = {
   allPosts: Post[]
@@ -25,11 +29,15 @@ export default function Index({ allPosts }: Props) {
         <Intro />
         <Content>
           <H2>About</H2>
-          <p>Born in Russia, I moved to London at the age of thirty, where I spent most of my career as a web developer. My first gig there was in Perl. Around 2009, I switched to Ruby on Rails as it seemed superior in every way. A few years later, I picked up Node, and since then, I've been going back and forth between the two. I consider myself a full-stack developer, although the backend part of it is probably more valuable.</p>
+          <p>Born in Russia, I moved to London at the age of thirty, where I spent most of my career as a web developer. Around 2009, I switched from Perl to Ruby on Rails and picked up Node a few years later. Ever since I've been going back and forth between the two. I also took a lot of interest in automated testing (even wrote a <Link href="https://github.com/artemave/assert-raisins" target='_blank'>test runner</Link>!) and I consider this to be my strong side.</p>
           <p>Besides work, I've also dipped my toes into Go, Python, Dart, Lua, and Vimscript.</p>
 
           <p>I am currently living in France (I am a French citizen). I speak native Russian, fluent English, and reasonable French.</p>
+          <ButtonGroup className='mt-10'>
+            <ButtonLink href='https://cv.artem.rocks'>View my CV</ButtonLink>
+          </ButtonGroup>
         </Content>
+        <Footer />
       </Layout>
     </>
   )
