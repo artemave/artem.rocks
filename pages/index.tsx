@@ -1,11 +1,7 @@
-import Container from '../components/container'
-import MoreStories from '../components/more-stories'
-import HeroPost from '../components/hero-post'
 import Intro from '../components/intro'
 import Layout from '../components/layout'
 import { getAllPosts } from '../lib/api'
 import Head from 'next/head'
-import Post from '../interfaces/post'
 import Content from '../components/content'
 import H2 from '../components/H2'
 import Link from '../components/Link'
@@ -13,11 +9,7 @@ import Footer from '../components/footer'
 import ButtonLink from '../components/ButtonLink'
 import ButtonGroup from '../components/ButtonGroup'
 
-type Props = {
-  allPosts: Post[]
-}
-
-export default function Index({ allPosts }: Props) {
+export default function Index() {
   // const heroPost = allPosts[0]
   // const morePosts = allPosts.slice(1)
   return (
