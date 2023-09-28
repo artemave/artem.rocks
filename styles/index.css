@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 p {
-  @apply mb-4 leading-relaxed;
+  @apply mb-4 leading-relaxed text-lg;
 }

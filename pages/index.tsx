@@ -5,7 +5,6 @@ import Head from 'next/head'
 import Content from '../components/content'
 import H2 from '../components/H2'
 import Link from '../components/Link'
-import Footer from '../components/footer'
 import ButtonLink from '../components/ButtonLink'
 import ButtonGroup from '../components/ButtonGroup'
 
@@ -29,7 +28,6 @@ export default function Index() {
             <ButtonLink href='https://cv.artem.rocks'>View my CV</ButtonLink>
           </ButtonGroup>
         </Content>
-        <Footer />
       </Layout>
     </>
   )

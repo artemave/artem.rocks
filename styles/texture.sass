@@ -3,24 +3,23 @@ html
   background: radial-gradient(ellipse at bottom, #5091DD 0%, #030617 100%)
 
 $lineColor : #030617
-$step : 3
 $borderWeight: 1px
 
-@function borderShadow ($n) 
+@function borderShadow ($n, $step)
   $value: '0px 0px #{$lineColor}'
   @for $i from 0 through $n
     $value: '#{$value} , 0px #{($step)*$i}px #{$lineColor}'
   @return unquote($value)
 
-@function stripeShadow ($n) 
+@function stripeShadow ($n, $step)
   $value: '0px 0px #{$lineColor}'
   @for $i from 0 through $n
     $value: '#{$value} , #{($step)*$i}px 0px #{$lineColor}'
 
   @return unquote($value)
 
-$border:  borderShadow(1000)
-$stripe:  stripeShadow(1000)
+$border:  borderShadow(1000, 5)
+$stripe:  stripeShadow(1000, 5)
 
 #texture
   width: 100%
@@ -34,3 +33,14 @@ $stripe:  stripeShadow(1000)
     height: 100%
     box-shadow: $stripe
     z-index: -100
+
+
+@media screen and (max-width: 768px)
+  $border:  borderShadow(500, 3)
+  $stripe:  stripeShadow(500, 3)
+
+  #texture
+    box-shadow: $border
+
+    &:after
+      box-shadow: $stripe
