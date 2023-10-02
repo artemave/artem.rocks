@@ -56,6 +56,14 @@ const menuItems = [
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
 
+  function renderMenuItemLink(item: { url: string, title: string }, index: number): React.ReactNode {
+    return (
+      <Link onClick={() => setIsMenuOpen(false)} key={index} size='lg' className="w-full text-slate-100" href={item.url}>
+        {item.title}
+      </Link>
+    )
+  }
+
   return (
     <MyNavBar position='static' className="dark text-foreground" isMenuOpen={isMenuOpen} onMenuOpenChange={setIsMenuOpen}>
       <NavbarContent>
@@ -71,18 +79,10 @@ const Header = () => {
       </NavbarContent>
       <NavbarMenu>
         {
-          menuItems.map((item, index) => <NavbarMenuItem className="mt-4">{ renderMenuItemLink(item, index) }</NavbarMenuItem>)
+          menuItems.map((item, index) => <NavbarMenuItem className="mt-4 ml-2">{ renderMenuItemLink(item, index) }</NavbarMenuItem>)
         }
       </NavbarMenu>
     </MyNavBar>
-  )
-}
-
-function renderMenuItemLink(item: { url: string, title: string }, index: number): React.ReactNode {
-  return (
-    <Link key={index} size='lg' className="w-full text-slate-100" href={item.url}>
-      {item.title}
-    </Link>
   )
 }
 
