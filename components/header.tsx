@@ -59,11 +59,11 @@ const Header = () => {
   const router = useRouter()
   const currentPath = router.pathname
 
-  function renderMenuItemLink(item: { url: string, title: string }, index: number): React.ReactNode {
+  function renderMenuItemLink(item: { url: string, title: string }): React.ReactNode {
     const isActive = currentPath === item.url
 
     return (
-      <Link onClick={() => setIsMenuOpen(false)} key={index} size='lg' className={`w-full text-slate-100 ${isActive ? 'font-bold' : ''}`} href={item.url}>
+      <Link onClick={() => setIsMenuOpen(false)} size='lg' className={`w-full text-slate-100 ${isActive ? 'font-bold' : ''}`} href={item.url}>
         {item.title}
       </Link>
     )
@@ -79,12 +79,12 @@ const Header = () => {
       </NavbarContent>
       <NavbarContent className="hidden sm:flex gap-4" justify="center">
         {
-          menuItems.map((item, index) => <NavbarItem className="ml-8">{ renderMenuItemLink(item, index ) }</NavbarItem>)
+          menuItems.map((item, index) => <NavbarItem key={index} className="ml-8">{ renderMenuItemLink(item ) }</NavbarItem>)
         }
       </NavbarContent>
       <NavbarMenu>
         {
-          menuItems.map((item, index) => <NavbarMenuItem className="mt-4 ml-2">{ renderMenuItemLink(item, index) }</NavbarMenuItem>)
+          menuItems.map((item, index) => <NavbarMenuItem key={index} className="mt-4 ml-2">{ renderMenuItemLink(item) }</NavbarMenuItem>)
         }
       </NavbarMenu>
     </MyNavBar>

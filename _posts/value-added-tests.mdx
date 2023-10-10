@@ -113,8 +113,8 @@ There are tools that support the this style of testing. Most notably, Cucumber (
 
 But this is not why I am mentioning it. One part of Gherkin is a feature narrative. It is a blob of text at the very top that is not mapped to any executable code. For that reason, it is often skipped because it is just words. But if you’re sold on that value thing I am talking about, that would be the starting point of exploring it. The starting point here is to understand why the business needs the feature, before getting into the details of individual scenarios. In the hunt for value, this will set you on the right track. And it is still "outside in" by the way, only at the even higher level. Back to our example we could write something like:
 
-*In order to reduce the drop out of potential customers,<br>
-we’d like to make their experience more personal and engaging by assigning an "assistant" to each quote request.<br>
+*In order to reduce the drop out of potential customers,<br/>
+we’d like to make their experience more personal and engaging by assigning an "assistant" to each quote request.<br/>
 Assistants will follow up on quotes and will be there to answer any questions.*
 
 So, yeah, The Value. It is an incredibly important thing to question. The earlier the better. Doing so costs little compared to what it can save. And going back to our tests, it is kind of hidden when the test is written as a sequence of actions (imperative style), but a lot more obvious when it is written in terms of what users are trying to achieve and why (declarative style).

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 
 type Props = {
   tags: string[]
@@ -9,10 +9,10 @@ const Tags: React.FC<Props> = ({ tags }) => {
   return (
     <>
       {tags.map((tag, index) => (
-        <>
+        <Fragment key={index}>
           {index > 0 && ' '}
-          <span key={index}>{tag}</span>
-        </>
+          <span>{tag}</span>
+        </Fragment>
       ))}
     </>
   )

@@ -1,5 +1,5 @@
 type Post = {
-  readingTime: ReactNode
+  readingTime: string
   slug: string
   title: string
   date: string
