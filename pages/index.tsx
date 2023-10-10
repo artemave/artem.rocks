@@ -1,9 +1,8 @@
 import Intro from '../components/intro'
 import Layout from '../components/layout'
-import { getAllPosts } from '../lib/api'
 import Head from 'next/head'
 import Content from '../components/content'
-import H2 from '../components/H2'
+import H1 from '../components/H1'
 import Link from '../components/Link'
 import ButtonLink from '../components/ButtonLink'
 import ButtonGroup from '../components/ButtonGroup'
@@ -19,7 +18,7 @@ export default function Index() {
         </Head>
         <Intro />
         <Content>
-          <H2>About</H2>
+          <H1>About</H1>
           <p>Born in Russia, I moved to London at the age of thirty, where I spent most of my career as a web developer. Around 2009, I switched from Perl to Ruby on Rails and picked up Node a few years later. Ever since I've been going back and forth between the two. I also took a lot of interest in automated testing (even wrote a <Link href="https://github.com/artemave/assert-raisins" target='_blank'>test runner</Link>!) and I consider this to be my strong side.</p>
           <p>Besides work, I've also dipped my toes into Go, Python, Dart, Lua, and Vimscript.</p>
 
@@ -44,18 +43,3 @@ export default function Index() {
           //   />
           // )}
           // {morePosts.length > 0 && <MoreStories posts={morePosts} />}
-
-export const getStaticProps = async () => {
-  const allPosts = getAllPosts([
-    'title',
-    'date',
-    'slug',
-    'author',
-    'coverImage',
-    'excerpt',
-  ])
-
-  return {
-    props: { allPosts },
-  }
-}

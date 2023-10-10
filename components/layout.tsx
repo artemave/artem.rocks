@@ -11,9 +11,9 @@ const Layout = ({ children }: Props) => {
     <>
       <Meta />
       <div id="texture"></div>
-      <div className="min-h-screen">
+      <div className="min-h-screen flex flex-col">
         <Header />
-        <main>{children}</main>
+        <main className="flex grow items-stretch flex-col">{children}</main>
         <Footer />
       </div>
     </>

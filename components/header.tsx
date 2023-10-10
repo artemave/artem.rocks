@@ -8,6 +8,7 @@ import {
   NavbarMenu,
   NavbarMenuItem
 } from "@nextui-org/react"
+import { useRouter } from "next/router"
 import React from "react"
 
 const MyNavBar = extendVariants(Navbar, {
@@ -44,21 +45,25 @@ const menuItems = [
     title: 'Home'
   },
   {
-    url: '/blog',
+    url: '/posts',
     title: 'Blog'
   },
   {
-    url: '/#contact',
-    title: 'Contact'
-  }
+    url: 'https://cv.artem.rocks/',
+    title: 'Resume'
+  },
 ]
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
+  const router = useRouter()
+  const currentPath = router.pathname
 
   function renderMenuItemLink(item: { url: string, title: string }, index: number): React.ReactNode {
+    const isActive = currentPath === item.url
+
     return (
-      <Link onClick={() => setIsMenuOpen(false)} key={index} size='lg' className="w-full text-slate-100" href={item.url}>
+      <Link onClick={() => setIsMenuOpen(false)} key={index} size='lg' className={`w-full text-slate-100 ${isActive ? 'font-bold' : ''}`} href={item.url}>
         {item.title}
       </Link>
     )
@@ -74,7 +79,7 @@ const Header = () => {
       </NavbarContent>
       <NavbarContent className="hidden sm:flex gap-4" justify="center">
         {
-          menuItems.map((item, index) => <NavbarItem className="ml-8">{ renderMenuItemLink(item, index) }</NavbarItem>)
+          menuItems.map((item, index) => <NavbarItem className="ml-8">{ renderMenuItemLink(item, index ) }</NavbarItem>)
         }
       </NavbarContent>
       <NavbarMenu>

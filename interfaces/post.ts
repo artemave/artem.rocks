@@ -1,16 +1,12 @@
-import type Author from './author'
-
-type PostType = {
+type Post = {
+  readingTime: ReactNode
   slug: string
   title: string
   date: string
-  coverImage: string
-  author: Author
   excerpt: string
-  ogImage: {
-    url: string
-  }
-  content: string
+  tags: Array<string>
+  content?: string
+  url?: string
 }
 
-export default PostType
+export default Post
