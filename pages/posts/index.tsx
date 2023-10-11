@@ -20,7 +20,7 @@ const BlogIndexEntry = ({ post }: { post: Post, key: number }) => {
           {post.title}
         </Link>
       </h2>
-      <div className='text-slate-400'>
+      <div className='text-slate-400 my-1'>
         <span><DateFormatter dateString={post.date} /></span> • <span>{post.readingTime}</span> • <Tags tags={post.tags}/>
       </div>
       <div>{post.excerpt}</div>

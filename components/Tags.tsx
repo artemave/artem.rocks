@@ -10,8 +10,7 @@ const Tags: React.FC<Props> = ({ tags }) => {
     <>
       {tags.map((tag, index) => (
         <Fragment key={index}>
-          {index > 0 && ' '}
-          <span>{tag}</span>
+          <span className='px-2 mr-2 bg-slate-500 text-slate-100 rounded'>{tag}</span>
         </Fragment>
       ))}
     </>

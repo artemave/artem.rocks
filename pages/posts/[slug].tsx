@@ -4,7 +4,7 @@ import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote'
 import ErrorPage from 'next/error'
 import PostHeader from '../../components/PostHeader'
 import Layout from '../../components/layout'
-import { getPostBySlug, getAllPosts } from '../../lib/api'
+import { getPostBySlug, getPostSlugs } from '../../lib/api'
 import PostTitle from '../../components/post-title'
 import Head from 'next/head'
 import type Post from '../../interfaces/post'
@@ -109,13 +109,13 @@ export async function getStaticProps({ params }: Params) {
 }
 
 export async function getStaticPaths() {
-  const posts = getAllPosts(['slug'])
+  const slugs = getPostSlugs()
 
   return {
-    paths: posts.map((post) => {
+    paths: slugs.map((slug) => {
       return {
         params: {
-          slug: post.slug,
+          slug,
         },
       }
     }),
