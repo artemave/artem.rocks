@@ -1,6 +1,6 @@
 type Post = {
   readingTime: string
-  slug: string
+  slug?: string
   title: string
   date: string
   excerpt: string

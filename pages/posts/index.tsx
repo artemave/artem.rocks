@@ -10,10 +10,13 @@ import Post from '../../interfaces/post'
 import DateFormatter from '../../components/date-formatter'
 
 const BlogIndexEntry = ({ post }: { post: Post, key: number }) => {
+  const linkProps = post.url ? { isExternal: true, showAnchorIcon: true } : {}
+  const url = post.url || `/posts/${post.slug}`
+
   return (
     <div className='mb-8'>
       <h2 className="mt-4">
-        <Link size='lg' className='font-medium text-xl text-slate-600' href={`/posts/${post.slug}`}>
+        <Link {...linkProps} size='lg' className='font-medium text-xl text-slate-600' href={url}>
           {post.title}
         </Link>
       </h2>
