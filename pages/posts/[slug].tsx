@@ -11,11 +11,27 @@ import type Post from '../../interfaces/post'
 import Tags from '../../components/Tags'
 import Content from '../../components/content'
 import DateFormatter from '../../components/date-formatter'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypeHighlight from 'rehype-highlight'
+import 'highlight.js/styles/atom-one-dark.css'
+import Link from '../../components/Link'
+import mdStyles from '../../components/markdown-styles.module.css'
 
 type Props = {
   post: Post
   mdxSource: MDXRemoteSerializeResult
 }
+
+const components = {
+  a: Link
+}
+
+const extraMarkdownCSS = `
+  pre code.hljs {
+    margin-bottom: 1em;
+  }
+`
 
 export default function Post({ post, mdxSource }: Props) {
   const router = useRouter()
@@ -32,11 +48,14 @@ export default function Post({ post, mdxSource }: Props) {
               <article className="mb-32">
                 <Head>
                   <title>{post.title}</title>
+                  <style>{extraMarkdownCSS}</style>
                 </Head>
                 <PostHeader title={post.title}>
                   <span><DateFormatter dateString={post.date} /></span> • <span>{post.readingTime}</span> • <Tags tags={post.tags}/>
                 </PostHeader>
-                <MDXRemote {...mdxSource} />
+                <div className={mdStyles.markdown}>
+                  <MDXRemote {...mdxSource} components={components} />
+                </div>
               </article>
             </>
           )}
@@ -64,7 +83,22 @@ export async function getStaticProps({ params }: Params) {
     'readingTime',
   ]) as Post
 
-  const mdxSource = await serialize(post.content)
+  const mdxSource = await serialize(post.content, {
+    mdxOptions: {
+      rehypePlugins: [
+        rehypeSlug,
+        [
+          rehypeAutolinkHeadings,
+          {
+            behavior: 'wrap',
+          },
+        ],
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        rehypeHighlight,
+      ],
+    }
+  })
 
   return {
     props: {

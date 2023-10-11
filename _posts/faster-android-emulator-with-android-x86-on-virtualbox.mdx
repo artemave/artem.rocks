@@ -20,13 +20,17 @@ Next stop is more interesting - [Android-x86](http://www.android-x86.org/). It p
 
 **Setup port forwarding**:
 
-    % VBoxManage modifyvm "VM_NAME_HERE" --natpf1 "console,tcp,,5554,,5554"    
-    % VBoxManage modifyvm "VM_NAME_HERE" --natpf1 "adb,tcp,,5555,,5555"
+```sh
+VBoxManage modifyvm "VM_NAME_HERE" --natpf1 "console,tcp,,5554,,5554"    
+VBoxManage modifyvm "VM_NAME_HERE" --natpf1 "adb,tcp,,5555,,5555"
+```
 
 so that `adb` (Android Debug Bridge) can connect to vm:
 
-    % adb connect localhost
-    connected to localhost:5555
+```sh
+adb connect localhost
+> connected to localhost:5555
+```
 
 At this point we've got a fully functional Android VM that we can deploy to from Eclipse. To do that simply use a run configuration with target set to "Always prompt to pick device".
 
@@ -34,7 +38,9 @@ At this point we've got a fully functional Android VM that we can deploy to from
 
 1. Add custom screen resolution:
 
-        % VBoxManage setextradata "VM_NAME_HERE" "CustomVideoMode1" "480x800x16"
+```sh
+VBoxManage setextradata "VM_NAME_HERE" "CustomVideoMode1" "480x800x16"
+```
 
 2. Figure out what is the ‘hex’-value for your `VideoMode`:
     - Start the VM
@@ -54,4 +60,4 @@ Finally, to enable **proper mouse support**, in VM settings (System tab) uncheck
 <br/>
 That is it. Fast emulator, comparable to that of iOS. If only Google had something like that in their sdk. But hey, that would mean what, no yak shaving? Unacceptable.
 
-![emulator](https://dl.dropboxusercontent.com/u/362737/android-emulator.jpg)
+![emulator](/assets/blog/faster-android-emulator-with-android-x86-on-virtualbox/android-emulator.jpg)

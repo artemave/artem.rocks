@@ -9,9 +9,9 @@ import Tags from '../../components/Tags'
 import Post from '../../interfaces/post'
 import DateFormatter from '../../components/date-formatter'
 
-const BlogIndexEntry = ({ post, key }: { post: Post, key: number }) => {
+const BlogIndexEntry = ({ post }: { post: Post, key: number }) => {
   return (
-    <div key={key}>
+    <div>
       <h2 className="mt-4">
         <Link size='lg' className='font-medium text-xl text-slate-600' href={`/posts/${post.slug}`}>
           {post.title}

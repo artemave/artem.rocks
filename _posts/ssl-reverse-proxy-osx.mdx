@@ -17,13 +17,13 @@ brew install nginx
 
 Generate self-signed certificate:
 
-```
+```sh
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /usr/local/etc/nginx/cert.key -out /usr/local/etc/nginx/cert.crt
 ```
 
 Nginx.conf:
 
-```
+```sh
 # Important! I had to change this to myself (artem) or it wouldn't serve js assets with "permission denied".
 # Group is mandatory despite nginx docs claiming otherwise.
 user  artem admin;
@@ -79,7 +79,7 @@ http {
 
 Start nginx as sudo:
 
-```
+```sh
 sudo nginx
 ```
 

@@ -17,42 +17,54 @@ So, to business. There is model called `OfflineDeal` that needs to be turned int
 
 Let us find all the files with `offline_deal` in their name:
 
-    % find . -name "*offline_deal*" 
-    ./app/assets/stylesheets/retailer/offline_deals.css.less
-    ./app/controllers/offline_deals_controller.rb
-    ./app/models/offline_deal.rb
-    ./app/views/offline_deals
-    ./db/migrate/20130117121729_create_retailer_offline_deals.rb
-    ./db/migrate/20130118164309_change_vouchers_deal_id_to_offline_deal_id.rb
-    ./db/migrate/20130121150012_add_referrer_reward_to_offline_deals.rb
-    ./db/migrate/20130130172326_add_fine_print_to_offline_deals.rb
-    ./db/migrate/20130131122749_rename_offline_deals_description_to_voucher_text.rb
-    ./spec/controllers/offline_deals_controller_spec.rb
-    ./spec/factories/offline_deals.rb
-    ./spec/models/offline_deal_spec.rb
-    ./spec/routing/offline_deals_routing_spec.rb
+```sh
+% find . -name "*offline_deal*" 
+./app/assets/stylesheets/retailer/offline_deals.css.less
+./app/controllers/offline_deals_controller.rb
+./app/models/offline_deal.rb
+./app/views/offline_deals
+./db/migrate/20130117121729_create_retailer_offline_deals.rb
+./db/migrate/20130118164309_change_vouchers_deal_id_to_offline_deal_id.rb
+./db/migrate/20130121150012_add_referrer_reward_to_offline_deals.rb
+./db/migrate/20130130172326_add_fine_print_to_offline_deals.rb
+./db/migrate/20130131122749_rename_offline_deals_description_to_voucher_text.rb
+./spec/controllers/offline_deals_controller_spec.rb
+./spec/factories/offline_deals.rb
+./spec/models/offline_deal_spec.rb
+./spec/routing/offline_deals_routing_spec.rb
+```
 
 And pipe the result of find command into vim:
 
-    % find . -name "*offline_deal*" | vim -
+```sh
+find . -name "*offline_deal*" | vim -
+```
 
 Notice that not all of these files require renaming. Migration files reflect change history and should therefor stay untouched. Let us get rid of the lines with those file names:
 
-    :g/migrate/d
+```sh
+:g/migrate/d
+```
 
  and change the remaining ones into rename command:
 
-    :%s/\(.*\)offline_deal\(.*\)/git mv & \1instore_deal\2
+```sh
+:%s/\(.*\)offline_deal\(.*\)/git mv & \1instore_deal\2
+```
 
 Each line is now turned into `git mv` command:
 
-    ...
-    git mv ./app/models/offline_deal.rb ./app/models/instore_deal.rb
-    ...
+```sh
+...
+git mv ./app/models/offline_deal.rb ./app/models/instore_deal.rb
+...
+```
 
 And here is the magic part. Run them all:
 
-    :w !sh
+```sh
+:w !sh
+```
 
 Voila, files are renamed.
 
@@ -64,13 +76,17 @@ The first two (including dynamic methods such as path helpers or AR finders) are
 
 Find all matching files and open them in vim:
 
-    % vim $(ag offline_deal -l app lib spec features config)
+```sh
+vim $(ag offline_deal -l app lib spec features config)
+```
 
 I am using [ag](https://github.com/ggreer/the_silver_searcher) - a faster alternative to [ack](http://betterthangrep.com/) (a popular alternative to grep). `-l` option tells it to only print names of files with matches, not the matches themselves (as it does by default). That list of file names is passed to vim so they are all opened in buffers.
 
 Now for each opened buffer let us perform the replace and save the changes:
 
-    :bufdo %s/offline_deal/instore_deal/g | update
+```sh
+:bufdo %s/offline_deal/instore_deal/g | update
+```
 
 To rename class names, we repeat the above steps with `OfflineDeal` -> `InstoreDeal`.
 

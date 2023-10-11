@@ -46,7 +46,9 @@ Make sure this is in the `$PATH` and don't forget to `chmod +x` it.
 
 **Second**. Add this to `.vimrc`:
 
-    let g:agprg = 'agprg.sh'
+```vimscript
+let g:agprg = 'agprg.sh'
+```
 
 And voila, search. As in, The Search. Fast and furious.
 
@@ -55,7 +57,9 @@ And voila, search. As in, The Search. Fast and furious.
 
 If you don't use `ag.vim` then you can still use this with `vimgrep`. Just add this (in addition to the above) to `.vimrc`:
 
-    let g:grepformat="%f:%l:%c:%m"
+```vimscript
+let g:grepformat="%f:%l:%c:%m"
+```
 
 [The silver searcherer](https://github.com/ggreer/the_silver_searcher) is still expected to be installed.
 
