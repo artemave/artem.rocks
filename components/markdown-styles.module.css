@@ -22,3 +22,8 @@
   list-style: auto;
   @apply ml-4;
 }
+
+.markdown p code,
+.markdown p em {
+  word-wrap: break-word;
+}
