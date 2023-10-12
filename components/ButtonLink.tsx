@@ -9,7 +9,7 @@ type Props = {
 
 const ButtonLink = ({ href, className, children }: Props) => {
   return (
-    <a href={href} className={`hover:invert-[.1] text-slate-100 bg-slate-700 inline-block rounded-lg px-5 py-3 ${className}`}>{children}</a>
+    <a href={href} className={`hover:invert-[.1] text-lg text-slate-100 bg-slate-700 inline-block rounded-lg px-5 py-3 ${className}`}>{children}</a>
   )
 }
 
