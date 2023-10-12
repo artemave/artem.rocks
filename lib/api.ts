@@ -46,7 +46,7 @@ const externalPosts = [
   {
     title: 'Node + SWC make a lightning fast typescript runtime',
     excerpt: 'Typescript is great, but the compilation is slow. This post shows how to make it fast.',
-    date: '2022-04-29',
+    date: '2023-01-02',
     readingTime: '6 min read',
     url: 'https://archive.featurist.co.uk/blog/running-typescript-in-node-with-near-zero-compilation-cost/',
     tags: ['node', 'typescript']
