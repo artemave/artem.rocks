@@ -8,8 +8,6 @@ import ButtonLink from '../components/ButtonLink'
 import ButtonGroup from '../components/ButtonGroup'
 
 export default function Index() {
-  // const heroPost = allPosts[0]
-  // const morePosts = allPosts.slice(1)
   return (
     <>
       <Layout>
@@ -31,15 +29,3 @@ export default function Index() {
     </>
   )
 }
-
-          // {heroPost && (
-          //   <HeroPost
-          //     title={heroPost.title}
-          //     coverImage={heroPost.coverImage}
-          //     date={heroPost.date}
-          //     author={heroPost.author}
-          //     slug={heroPost.slug}
-          //     excerpt={heroPost.excerpt}
-          //   />
-          // )}
-          // {morePosts.length > 0 && <MoreStories posts={morePosts} />}
