@@ -1,1 +1,1 @@
-# [https://artem.rocks](https://artem.rocks)
+# [https://artem.rocks](https://artem.rocks) [![Deploy Next.js site to Pages](https://github.com/artemave/artem.rocks/actions/workflows/nextjs.yml/badge.svg)](https://github.com/artemave/artem.rocks/actions/workflows/nextjs.yml)
