@@ -11,9 +11,11 @@ const Intro = () => {
         <div className={`absolute top-[150px] w-[300px] h-[150px] bg-[#FFDD00] z-10 rounded-b-full opacity-0 group-hover:opacity-50 ${transitionCommon}`} />
         <Image className={`absolute rounded-full border-2 border-amber-200 group-hover:grayscale ${transitionCommon}`} src={profileImage} alt={'Artem Avetisyan stands with Ukraine'} placeholder='blur' width={300}/>
       </div>
-      <div className='md:ml-8 mt-6 md:mt-7 text-center md:text-left'>
-        <div className='text-4xl tracking-tight text-center sm:text-left md:tracking-tighter leading-tight font-medium mb-6 mt-6'>Hey, I am <span data-glitch="Artem" className='glitch'>Artem</span></div>
-        <p className='text-lg'>Web developer and OSS tinkerer.</p>
+      <div className='md:ml-6 mt-6 md:mt-7 text-center md:text-left'>
+        <div className='text-4xl tracking-tight text-center sm:text-left md:tracking-tighter leading-tight font-medium my-6 pl-2'>Hey, I am <span data-glitch="Artem" className='glitch'>Artem</span></div>
+        <div className='backdrop-blur-[0.3px] md:backdrop-blur-[1px] px-2 rounded-lg'>
+          <p className='text-lg'>Web developer and OSS tinkerer.</p>
+        </div>
       </div>
     </section>
   )
