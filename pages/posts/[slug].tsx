@@ -18,6 +18,7 @@ import 'highlight.js/styles/atom-one-dark.css'
 import Link from '../../components/Link'
 import mdStyles from '../../components/markdown-styles.module.css'
 import CodeHighlightWithCopy from '../../components/CodeHighlightWithCopy'
+import Giscus from '@giscus/react'
 
 type Props = {
   post: Post
@@ -51,6 +52,21 @@ export default function Post({ post, mdxSource }: Props) {
                 <div className={mdStyles.markdown}>
                   <MDXRemote {...mdxSource} components={components} />
                 </div>
+                <Giscus
+                  id='comments'
+                  repo="artemave/artem.rocks"
+                  repoId="R_kgDOKXBrbg"
+                  category="Announcements"
+                  categoryId="DIC_kwDOKXBrbs4CaycK"
+                  mapping="pathname"
+                  strict="0"
+                  reactionsEnabled="1"
+                  emitMetadata="0"
+                  inputPosition="bottom"
+                  theme="light"
+                  lang="en"
+                  loading="lazy"
+                />
               </article>
             </>
           )}
