@@ -1,4 +1,4 @@
-import { FaEnvelopeOpen, FaGithub, FaLinkedin } from 'react-icons/fa6'
+import { FaEnvelopeOpen, FaGithub, FaLinkedin, FaRss } from 'react-icons/fa6'
 import Container from './container'
 import SocialLink from './social-link'
 import Link from './Link'
@@ -13,6 +13,7 @@ const Footer = () => {
             <SocialLink href={'mailto:hello@artem.rocks'} icon={FaEnvelopeOpen}/>
             <SocialLink href={'https://github.com/artemave'} icon={FaGithub} className='ml-8'/>
             <SocialLink href={'https://www.linkedin.com/in/artem-avetisyan/'} icon={FaLinkedin} className='ml-8'/>
+            <SocialLink href={'/rss.xml'} icon={FaRss} className='ml-8'/>
           </div>
         </div>
       </Container>

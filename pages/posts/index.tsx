@@ -8,6 +8,7 @@ import { getAllPosts } from '../../lib/api'
 import Tags from '../../components/Tags'
 import Post from '../../interfaces/post'
 import DateFormatter from '../../components/date-formatter'
+import generateRssFeed from '../../lib/generateRssFeed'
 
 const BlogIndexEntry = ({ post }: { post: Post, key: number }) => {
   const linkProps = post.url ? { isExternal: true, showAnchorIcon: true } : {}
@@ -56,6 +57,9 @@ export const getStaticProps = async () => {
     'tags',
     'url'
   ])
+
+  const siteUrl = process.env.SITE_URL || 'http://localhost:3000'
+  generateRssFeed(siteUrl, allPosts)
 
   return {
     props: { allPosts },
