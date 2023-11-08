@@ -17,6 +17,7 @@ import rehypeHighlight from 'rehype-highlight'
 import 'highlight.js/styles/atom-one-dark.css'
 import Link from '../../components/Link'
 import mdStyles from '../../components/markdown-styles.module.css'
+import CodeHighlightWithCopy from '../../components/CodeHighlightWithCopy'
 
 type Props = {
   post: Post
@@ -24,14 +25,9 @@ type Props = {
 }
 
 const components = {
-  a: Link
+  a: Link,
+  pre: CodeHighlightWithCopy,
 }
-
-const extraMarkdownCSS = `
-  pre code.hljs {
-    margin-bottom: 3em;
-  }
-`
 
 export default function Post({ post, mdxSource }: Props) {
   const router = useRouter()
@@ -48,7 +44,6 @@ export default function Post({ post, mdxSource }: Props) {
               <article className="mb-32">
                 <Head>
                   <title>{post.title}</title>
-                  <style>{extraMarkdownCSS}</style>
                 </Head>
                 <PostHeader title={post.title}>
                   <span><DateFormatter dateString={post.date} /></span> • <span>{post.readingTime}</span> • <Tags tags={post.tags}/>
