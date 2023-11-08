@@ -5,7 +5,6 @@ import ErrorPage from 'next/error'
 import PostHeader from '../../components/PostHeader'
 import Layout from '../../components/layout'
 import { getPostBySlug, getPostSlugs } from '../../lib/api'
-import PostTitle from '../../components/post-title'
 import Head from 'next/head'
 import type Post from '../../interfaces/post'
 import Tags from '../../components/Tags'
@@ -19,6 +18,7 @@ import Link from '../../components/Link'
 import mdStyles from '../../components/markdown-styles.module.css'
 import CodeHighlightWithCopy from '../../components/CodeHighlightWithCopy'
 import Giscus from '@giscus/react'
+import H1 from '../../components/H1'
 
 type Props = {
   post: Post
@@ -39,7 +39,7 @@ export default function Post({ post, mdxSource }: Props) {
     <Layout>
       <Content>
         {router.isFallback ? (
-          <PostTitle>Loading…</PostTitle>
+          <H1>Loading…</H1>
         ) : (
             <>
               <article className="mb-32">

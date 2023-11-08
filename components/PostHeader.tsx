@@ -1,4 +1,4 @@
-import PostTitle from './post-title'
+import H1 from "./H1"
 
 type Props = {
   title: string
@@ -8,7 +8,7 @@ type Props = {
 const PostHeader = ({ title, children }: Props) => {
   return (
     <>
-      <PostTitle>{title}</PostTitle>
+      <H1>{title}</H1>
       <div className="mb-10 text-lg text-slate-400">
         {children}
       </div>
