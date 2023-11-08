@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import classNames from 'classnames'
+import Head from 'next/head'
 
 // copied from https://github.com/PhilStainer/philstainer.io/blob/main/components/Pre.tsx
+
+const extraMarkdownCSS = `
+  pre code.hljs {
+    padding: 1em 0.5em !important;
+  }
+`
 
 const CodeHighlightWithCopy = ({children, ...props}) => {
   const [copied, setCopied] = useState(false)
@@ -20,7 +27,11 @@ const CodeHighlightWithCopy = ({children, ...props}) => {
 
   return (
     <div className="relative group mb-12">
-      <pre ref={preRef} {...props}>
+      <Head>
+        <style>{extraMarkdownCSS}</style>
+      </Head>
+
+      <pre ref={preRef} className='-mx-2 sm:mx-0' {...props}>
         <div className="absolute flex items-center space-x-2 top-0 right-0 m-2">
           <span
             className={classNames('hidden fade-in text-xs text-green-400', {
