@@ -9,7 +9,7 @@ const PostHeader = ({ title, children }: Props) => {
   return (
     <>
       <PostTitle>{title}</PostTitle>
-      <div className="mb-6 text-lg text-slate-400">
+      <div className="mb-10 text-lg text-slate-400">
         {children}
       </div>
     </>
