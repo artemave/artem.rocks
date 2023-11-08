@@ -2,7 +2,12 @@
 .markdown ul,
 .markdown ol,
 .markdown blockquote {
-  @apply my-6;
+  @apply mt-6 mb-8;
+}
+
+.markdown blockquote {
+  @apply pl-6 border-slate-200 border-l-4;
+  font-style: italic;
 }
 
 .markdown h2 {

@@ -1,0 +1,134 @@
+---
+title: "Running Flutter Tests with Debugger in Neovim"
+excerpt: "How to debug a single Flutter test in Neovim."
+date: '2023-11-08'
+tags:
+  - testing
+  - neovim
+  - flutter
+---
+
+[Flutter](https://flutter.dev/) is great, but it's leaps and bounds slower than Node.js and Rails - the technologies I am mostly familiar with. To be fair to Flutter, it's largely because the mobile stack is fundamentally slower than the web stack. In the end though, running a single test in Flutter is unbearably slow, making the usual console log debugging a non-starter. Interactive debugging is an obvious coping strategy in this case.
+
+People who prefer getting things done likely do so using a proper IDE such as VSCode, and when faced with the challenge of running a debugger in an unfamiliar technology, they simply install an extension and that's the end of it. People who prefer getting things done in Neovim are in luck too, as this appears to be a [solved problem](https://github.com/sidlatau/neotest-dart).
+
+But where's the glory in that? Luckily for you, the reader of this post, I am not currently wearing the "get shit done" hat. I am wearing the "see you on the other side of this rabbit hole" hat. So let me take you on a whirlwind adventure that involves Neovim, a slew of plugins, a pile of configuration code, and a ton of head scratching.
+
+## DAP
+
+[Debug Adapter Protocol](https://microsoft.github.io/debug-adapter-protocol/) allows IDEs/editors to support interactive debugging in general without getting into the specifics of particular language tooling. For example, [nvim-dap](https://github.com/mfussenegger/nvim-dap) implements the client side of the DAP protocol, enabling Neovim to debug any language for which a server-side DAP implementation exists. VSCode is also a DAP client, so there are already many existing adapters available.
+
+So nvim-dap is the first piece of the puzzle. It does all the heavy lifting but is rather lite on UI. That's where [nvim-dap-ui](https://github.com/rcarriga/nvim-dap-ui) comes in handy. Optionally, you can add [nvim-dap-virtual-text](https://github.com/theHamsta/nvim-dap-virtual-text) for virtual text hints during debugging.
+
+### Adapter
+
+In nvim-dap terms, an adapter is a reference to some language-specific external tool that resides somewhere on the filesystem and is completely external to the IDE. Ideally, we don't want to install and configure that external tool manually. [mason.nvim](https://github.com/williamboman/mason.nvim) is a plugin that does a good job of automating this process. There is some overlap between a regular Neovim package manager (e.g., packer) and mason, as a packer package can take also care of external tooling. However, mason just works, and for now, I'm willing to ignore the side rabbit hole of not using it.
+
+Optionally, you can also add [mason-tool-installer.nvim](https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim) to keep the dependencies consistent across environments. Currently, we only need the Dart adapter, but there is much more available in the [mason registry](https://mason-registry.dev/registry/list):
+
+```lua
+require('mason').setup()
+require('mason-tool-installer').setup {
+  ensure_installed = {
+    'dart-debug-adapter',
+  }
+}
+```
+
+Now let's create an adapter configuration suitable for running tests:
+
+```lua
+require('dap').adapters.flutter_test_debug = {
+  type = 'executable',
+  command = vim.fn.stdpath('data') .. '/mason/bin/dart-debug-adapter',
+  args = {'flutter_test'}
+}
+```
+
+### Run Configuration
+
+To actually exercise an adapter, we also need a run configuration.
+
+> It may seem overly complicated to split what essentially is a single configuration into two parts (adapter and run configuration). I guess that's because some adapters are servers and they are only run once.
+
+nvim-dap provides the following API to run your app/test/whatever using an adapter:
+
+```vim
+:lua require('dap').run(someRunConfiguration)
+```
+
+where `someRunConfiguration` is an object with a `type` property referencing an adapter. In our case, it looks like this:
+
+```lua
+{
+  type = 'flutter_test_debug',
+  request = 'launch',
+  name = 'Debug Flutter Test',
+  dartSdkPath = vim.fn.expand('~') .. '/flutter/bin/cache/dart-sdk/', -- assumes standard Flutter SDK path
+  flutterSdkPath = vim.fn.expand('~') .. '/flutter',                  -- assumes standard Flutter SDK path
+  program = "${file}",
+  args = {}, -- args are passed down to the underlying `flutter test`
+  cwd = "${workspaceFolder}",
+}
+```
+
+As it stands, this will run the entire test file via the debug adapter with breakpoints and all. And that's already useful. But the goal here is to run a single test. In Flutter, to run a single test, you can use the `--plain-name` argument to only run test(s) that match a substring. So we need to dynamically determine the current test and pass it with `args`. Ages ago, I wrote [a plugin](https://github.com/artemave/vigun) to run tests from Vim, and it happens to solve this very problem. Let's update our run configuration to make use of it:
+
+```lua
+function testRunConfiguration()
+  local testName = vim.api.nvim_call_function('vigun#TestTitleWithContext', {})
+
+  return {
+    type = 'flutter_test_debug',
+    request = 'launch',
+    name = 'Debug Flutter Test',
+    dartSdkPath = vim.fn.expand('~') .. '/flutter/bin/cache/dart-sdk/',
+    flutterSdkPath = vim.fn.expand('~') .. '/flutter',
+    program = "${file}",
+    args = {'--plain-name', testName},
+    cwd = "${workspaceFolder}",
+  }
+end
+```
+
+And voila, running this will debug just the test under the cursor:
+
+```vim
+:lua require('dap').run(testRunConfiguration())
+```
+
+## Debug the App Itself
+
+Sometimes it's useful to run the app itself with the debugger. This is actually simpler compared to what we've just been through. We'll need a separate adapter (because `args` is different and I couldn't find a way to pass it with the run configuration):
+
+```lua
+require('dap').adapters.dart = {
+  type = 'executable',
+  command = vim.fn.stdpath('data') .. '/mason/bin/dart-debug-adapter',
+  args = {'flutter'}
+}
+```
+
+For the run configuration, let's do something different this time. Since we don't need to evaluate it dynamically (there is no current test name to figure out every time we debug the app), we can register a default one for the `dart` file type:
+
+```lua
+require('dap').configurations.dart = {
+  {
+    type = 'dart',
+    request = 'launch',
+    name = 'Launch Flutter',
+    dartSdkPath = vim.fn.expand('~') .. '/flutter/bin/cache/dart-sdk/',
+    flutterSdkPath = vim.fn.expand('~') .. '/flutter',
+    program = '${workspaceFolder}/lib/main.dart',
+    cwd = '${workspaceFolder}',
+  }
+}
+```
+
+As a result, simply calling `dap.continue()` will pick it up:
+
+```vim
+:lua require('dap').continue()
+```
+
+You made it. The end.

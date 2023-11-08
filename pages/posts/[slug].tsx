@@ -29,7 +29,7 @@ const components = {
 
 const extraMarkdownCSS = `
   pre code.hljs {
-    margin-bottom: 1em;
+    margin-bottom: 3em;
   }
 `
 
