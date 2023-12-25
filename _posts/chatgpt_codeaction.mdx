@@ -1,0 +1,74 @@
+---
+title: "ChatGPT code action in neovim"
+excerpt: "Chat about diagnostic message under cursor with ChatGPT."
+date: '2023-12-25'
+tags:
+  - neovim
+  - chatgpt
+  - lsp
+---
+
+LSP servers provide suggestions on how to fix certain code problems (e.g. type errors), and those suggestions can be applied via code actions. Sometimes, though, there are no fixes available, and that's when you might want to paste the error into a web search or, more recently, into ChatGPT to try and figure it out for yourself.
+
+It's not possible to copy diagnostic messages under the cursor (they need to be shown somewhere else first - e.g. quickfix window), and then the conversation takes place in the browser (away from the code), so overall the chat UX is a bit clumsy. And so I thought, wouldn't it be nice if there was a code action to consult the AI about that particular error right there in nvim?
+
+I couldn't find an off-the-shelf solution for this, so I conjured one up with a couple of plugins and a bit of code. The plugins in question are [gp.nvim](https://github.com/Robitx/gp.nvim) and [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim). They don't need any specific configuration. And the code looks like this:
+
+```lua
+local null_ls = require'null-ls'
+
+local whats_this_action = {
+  method = { null_ls.methods.CODE_ACTION },
+  filetypes = {},
+  generator = {
+    fn = function()
+      local diagnostics_under_cursor = vim.diagnostic.get(0, { lnum = vim.fn.line('.') - 1 })
+      if #diagnostics_under_cursor == 0 then
+        return
+      end
+
+      local gp = require('gp')
+      local diagnostic_under_cursor = diagnostics_under_cursor[1]
+      local severity_label = vim.diagnostic.severity[diagnostic_under_cursor.severity]
+
+      return {{
+        title = "What's this about?",
+        action = function()
+          local current_line = vim.fn.getline('.')
+          current_line = current_line:gsub("^%s+", "")
+
+          local file_type = vim.bo.filetype
+
+          local user_message = {
+            "I am editing this line of code:",
+            "```".. file_type,
+            current_line,
+            "```",
+            "and I am seeing the following diagnostic issue (severity ".. severity_label ..") reported by the language tooling:",
+            "```",
+            diagnostic_under_cursor.message,
+            "```",
+            "How do I fix it?"
+          }
+
+          local agent = gp.get_chat_agent()
+          local system_prompt = "You are an expert " .. file_type .. " developer."
+            .." You are helping me to fix issues reported by language tooling."
+            .." I am an experienced developer, so be concise, but ask questions if necessary."
+
+          local chat_buffer = gp.cmd.ChatNew({}, agent.model, system_prompt)
+
+          vim.fn.appendbufline(chat_buffer, '$', user_message)
+          gp.cmd.ChatRespond({args = ""})
+        end
+      }}
+    end
+  }
+}
+
+null_ls.register(whats_this_action)
+```
+
+Here is how it looks in action:
+
+<video controls src='/assets/blog/chatgpt_codeaction/demo_whats_this_about.mp4' />

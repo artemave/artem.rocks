@@ -31,7 +31,7 @@ const CodeHighlightWithCopy = ({children, ...props}) => {
         <style>{extraMarkdownCSS}</style>
       </Head>
 
-      <pre ref={preRef} className='-mx-2 sm:mx-0' {...props}>
+      <pre ref={preRef} className='-mx-2 sm:mx-0 overflow-auto' {...props}>
         <div className="absolute flex items-center space-x-2 top-0 right-0 m-2">
           <span
             className={classNames('hidden fade-in text-xs text-green-400', {

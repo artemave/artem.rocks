@@ -1,4 +1,5 @@
 const withMDX = require('@next/mdx')()
+const withVideos = require('next-videos')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -10,4 +11,4 @@ const nextConfig = {
   },
 }
 
-module.exports = withMDX(nextConfig)
+module.exports = withVideos(withMDX(nextConfig))

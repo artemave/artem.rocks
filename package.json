@@ -22,6 +22,7 @@
     "highlight.js": "^11.9.0",
     "next": "latest",
     "next-mdx-remote": "^4.4.1",
+    "next-videos": "^1.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.11.0",
