@@ -1,0 +1,83 @@
+---
+title: "Workspace diagnostics in Neovim"
+excerpt: "Neovim doesn't show diagnostics for the entire project (only for opened files). But with a bit of code this can be done."
+date: '2024-02-06'
+tags:
+  - neovim
+  - lsp
+---
+
+
+Showing LSP diagnostics for all files in a project (rather than just the opened ones) is not something Neovim does out of the box. Which is a shame, and people [vent out](https://www.reddit.com/r/Neovim/comments/17jg7uc/should_we_gave_up_on_workspace_diagnostics_for/) their frustration about this every now and then.
+
+VSCode does it "almost out-of-the-box" apparently, but we know that it's using the same LSP servers (e.g. tsserver) as Neovim. So VSCode must be doing something that Neovim doesn't, and, perhaps, we could plug that gap with a bit of code. But first we need to understand how file or workspace diagnostics are reaching the IDE.
+
+LSP spec defines two ways to obtain diagnostics: [push](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_publishDiagnostics) and [pull](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_pullDiagnostics). The former is a message sent from the server to the client about a single file, and the latter is a request from the client to the server to get the diagnostics for either a single file or all files in a project. I can't speak for all LSP servers, but tsserver, for one, only implements push (as [evidenced](https://github.com/typescript-language-server/typescript-language-server/blob/master/src/lsp-server.ts#L178) by the fact that there is no `diagnosticProvider` capability when the server is initialized). So, whatever VSCode is doing, receiving diagnostic notification for individual files is enough.
+
+Much like VSCode, Neovim is also listening for those diagnostic notification events. It then stores them in an internal cache, and when the user wants to actually see them, renders the contents of the said cache in a quickfix window. Diagnostic events are in turn triggered by `textDocument/didOpen` and `textDocument/didChange` events, that are sent from the client to the server.
+
+So, perhaps, all we need is to send `textDocument/didOpen` for all files without actually opening them? Turns out, that's all there's is to it! The code that did the trick is rather simple:
+
+```lua
+local loaded_clients = {}
+
+local function trigger_workspace_diagnostics(client, bufnr, workspace_files)
+  if vim.tbl_contains(loaded_clients, client.id) then
+    return
+  end
+  table.insert(loaded_clients, client.id)
+
+  if not vim.tbl_get(client.server_capabilities, 'textDocumentSync', 'openClose') then
+    return
+  end
+
+  for _, path in ipairs(workspace_files) do
+    if path == vim.api.nvim_buf_get_name(bufnr) then
+      goto continue
+    end
+
+    local filetype = vim.filetype.match({ filename = path })
+
+    if not vim.tbl_contains(client.config.filetypes, filetype) then
+      goto continue
+    end
+
+    local params = {
+      textDocument = {
+        uri = vim.uri_from_fname(path),
+        version = 0,
+        text = vim.fn.join(vim.fn.readfile(path), "\n"),
+        languageId = filetype
+      }
+    }
+    client.notify('textDocument/didOpen', params)
+
+    ::continue::
+  end
+end
+
+local workspace_files = vim.fn.split(vim.fn.system('git ls-files'), "\n")
+-- convert paths to absolute
+workspace_files = map(workspace_files, function(_, path) return vim.fn.fnamemodify(path, ":p") end)
+```
+
+And then in we call `trigger_workspace_diagnostics` inside lspconfig's `on_attach` callback:
+
+```lua
+require('lspconfig').tsserver.setup({
+  on_attach = function(client, bufnr)
+                ...
+                trigger_workspace_diagnostics(client, bufnr, workspace_files)
+                ...
+              end
+})
+end
+```
+
+And voila. In the video below you can see that even though only one file is opened, diagnostics are shown for the other files as well:
+
+<video controls src='/assets/blog/workspace_diagnostics_nvim/workspace_diagnostics.mp4' />
+
+Now, this appears to be working, but I'd be really surprised if it doesn't break some things in some subtle ways. For one, LSP spec says that [an open notification must not be sent more than once without a corresponding close notification send before](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen), but, if that rules was ever enforced, it clearly isn't anymore. Or this might significantly slow things down. I don't know - it's just an experiment.
+
+It is for this reason, the above code is also available as a Neovim [plugin](https://github.com/artemave/workspace-diagnostics.nvim), so that hopefully some smarter and more informed people can help me make it actually useful.

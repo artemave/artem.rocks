@@ -36,3 +36,7 @@
 .markdown p em {
   word-wrap: break-word;
 }
+
+.markdown video {
+  @apply mb-12;
+}
