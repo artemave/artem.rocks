@@ -21,7 +21,7 @@ export default function generateRssFeed(siteUrl, allPosts) {
   const feed = new Feed(feedOptions)
 
   allPosts.forEach((post) => {
-    const url = post.url || `${siteUrl}/blog/${post.slug}`
+    const url = post.url || `${siteUrl}/posts/${post.slug}`
 
     feed.addItem({
       title: post.title,
