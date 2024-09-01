@@ -1,0 +1,154 @@
+---
+title: 'Auto preload fixtures in Rails'
+excerpt: 'Automatically skip fixture insert to get faster tests locally.'
+date: '2024-07-29'
+tags:
+  - rails
+  - testing
+---
+
+Have you ever noticed how Rails development server compiles browser assets just-in-time if needed? In this post we're going to do the same, but for inserting fixtures into test database when running tests. Why? Because it makes test start up time faster.
+
+## Problem
+
+Before running a test (or multiple tests), rails truncates test database(s) and inserts all fixtures. This only happens once before all tests, and does not happen between individual tests (at least, that's the behavior with `use_transactional_tests = true`). Depending on the size of the project, this can take a noticable amount of time, and when running a single test, it can take a significant chunk of the entire test time. It gets even worse when running tests in parallel, since all this is happening x number of times, where x is the number of parallel workers.
+
+Now, in my opinion, this isn't a huge problem when running all tests (although, it was big enough for DHH to [take notice](https://github.com/rails/rails/pull/51686)), but where it gets truly painful is when iterating on a single test.
+
+One thing to note though, in theory, this is only a problem when all tests are using all fixtures (`fixtures :all` in `test_helper.rb`) and so there's lots of data to insert. If, on the other hand, individual tests pick what fixtures they load, then the amount of data to insert should stay relatively small no matter the size of the project. Still, the higher up the test pyramid we go, the more fixtures are involved, and so the case for `fixtures :all` gets stronger.
+
+## Solution
+
+We're going to patch some Rails code, so that it skips fixture insert when all of the following conditions are met:
+
+- fixture files haven't changed since the previous test run
+- database schema hasn't changed since the previous test run
+- fixtures digest is present (stored in `tmp/fixtures_digest*` files)
+
+### Implementation
+
+Sadly, I wasn't able to come up with anything elegant, so brace yourself for a bunch of duck tape patchwork. However, it works and it's saving me a bit of time and a lot of sanity. I hope that some day it will make it into Rails, but in the mean time, you can just paste it into your project and enjoy faster tests.
+
+If you just want to use it, add a file called `test/support/preloaded_fixtures.rb`:
+
+```ruby
+module PreloadedFixtures
+  extend ActiveSupport::Concern
+
+  mattr_accessor :parallel_worker_number
+
+  class Cache
+    class << self
+      def hit?
+        last_digest&.== current_digest
+      end
+
+      def record_digest
+        digest_path.write(current_digest)
+      end
+
+      private
+
+      def current_digest
+        @current_digest ||= begin
+          files = Dir[Rails.root.join('test', 'fixtures', '**', '*.yml')]
+          file_ids = files.sort.map { |f| "#{File.basename(f)}/#{Digest::SHA1.file(f).hexdigest}" }
+          Digest::SHA1.hexdigest(file_ids.join('/'))
+        end
+      end
+
+      def last_digest
+        digest_path.read rescue Errno::ENOENT # rubocop:disable Style/RescueModifier
+      end
+
+      def digest_path
+        Rails.root.join('tmp', "fixtures_digest#{PreloadedFixtures.parallel_worker_number}")
+      end
+    end
+  end
+
+  class << self
+    # skips parallel databases truncation
+    def patch_active_record_tasks_database_tasks_reconstruct_from_schema
+      return if ActiveRecord::Tasks::DatabaseTasks.singleton_class.method_defined?(:original_reconstruct_from_schema)
+
+      ActiveRecord::Tasks::DatabaseTasks.singleton_class.class_eval do
+        alias_method :original_reconstruct_from_schema, :reconstruct_from_schema
+
+        define_method(:reconstruct_from_schema) do |*args|
+          unless PreloadedFixtures.schema_up_to_date? && PreloadedFixtures::Cache.hit?
+            original_reconstruct_from_schema(*args)
+          end
+        end
+      end
+    end
+
+    # skips fixtures insert into the database
+    def patch_active_record_fixture_set # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      return if ActiveRecord::FixtureSet.singleton_class.method_defined?(:original_insert)
+
+      ActiveRecord::FixtureSet.singleton_class.class_eval do
+        alias_method :original_insert, :insert
+
+        define_method(:insert) do |fixture_sets, connection|
+          if PreloadedFixtures.schema_up_to_date? && PreloadedFixtures::Cache.hit? && fixture_sets.first.model_class.count.positive?
+            puts "Using preloaded fixtures#{PreloadedFixtures.parallel_worker_number.try { |wn| " (worker #{wn})" }}" # rubocop:disable Rails/Output
+            # This magic line populates primary keys
+            fixture_sets.each(&:table_rows)
+          else
+            PreloadedFixtures::Cache.record_digest
+
+            original_insert(fixture_sets, connection)
+          end
+        end
+      end
+    end
+
+    def schema_up_to_date?
+      env_name = ActiveRecord::ConnectionHandling::DEFAULT_ENV.call
+
+      ActiveRecord::Base.configurations.configs_for(env_name:).all? do |db_config|
+        ActiveRecord::Tasks::DatabaseTasks.schema_up_to_date?(db_config)
+      rescue ActiveRecord::NoDatabaseError
+        false
+      end
+    end
+  end
+
+  class_methods do
+    def preloaded_fixtures
+      PreloadedFixtures.patch_active_record_fixture_set
+      PreloadedFixtures.patch_active_record_tasks_database_tasks_reconstruct_from_schema
+
+      # HACK: ensure parallel_worker_number is assigned before rails' setup fixtures `after_hook`.
+      # Because `after_hook` calls into our patched code that relies on parallel_worker_number.
+      ActiveSupport::Testing::Parallelization.class_variable_get('@@after_fork_hooks').unshift(proc do |worker_number|
+        PreloadedFixtures.parallel_worker_number = worker_number
+      end)
+    end
+  end
+end
+```
+
+And then use it in `test/test_helper.rb`:
+
+```ruby
+require_relative './support/preloaded_fixtures'
+
+module ActiveSupport
+  class TestCase
+    ...
+    include PreloadedFixtures
+
+    preloaded_fixtures
+    fixtures :all
+    ...
+```
+
+Explain the patches
+
+Show off some numbers
+
+Talk about clean logs
+
+Once the aforementioned [patch](https://github.com/rails/rails/pull/51686) from DHH is released, you can drop the `patch_active_record_tasks_database_tasks_reconstruct_from_schema` part and instead set `SKIP_TEST_DATABASE_TRUNCATE` environment variable.
