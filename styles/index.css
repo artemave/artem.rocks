@@ -5,3 +5,7 @@
 p {
   @apply mb-4 leading-relaxed text-lg;
 }
+
+li {
+  @apply text-lg;
+}
