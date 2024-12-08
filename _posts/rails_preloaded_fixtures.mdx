@@ -7,9 +7,9 @@ tags:
   - testing
 ---
 
-Have you ever noticed that Rails always inserts test fixtures into the database, even if their definitions haven't changed? You have probably also noticed how Rails development server compiles browser assets just-in-time if needed. And, perhaps, you were wandering why wouldn't they do the same thing for fixtures? Or maybe you weren't, if you didn't work on a large enough codebase, where, I bet, you couldn't help but notice that it takes an awful lot of time.
+Have you ever noticed that Rails always reloads test fixtures into the database, even if they haven't changed? You might have also seen the Rails development server compiling browser assets on-the-fly only when needed. So, why doesn't Rails handle fixtures the same way? If you've worked on a large enough codebase, you've probably felt the pain of how much time this unnecessary reloading can take.
 
-If I haven't lost you already, read on - that's exactly the problem we're going to solve here.
+If you're still with me, keep reading - that's the exact issue we're tackling here.
 
 ## Problem
 
