@@ -21,15 +21,15 @@ One thing to note though, in theory, this is only a problem when tests are using
 
 ## Solution
 
-We're going to patch some Rails code, so that it skips fixture inserts when all of the following conditions are met:
+We're going to patch some Rails code to skip fixture inserts when all of the following conditions are met:
 
-- fixture files haven't changed since the previous test run
-- database schema hasn't changed since the previous test run
-- fixtures digest is present (state of the fixtures from the previous run)
+- fixture files haven't changed since the previous test run.
+- the database schema hasn't changed since the previous test run.
+- a fixtures digest is present (indicating the state of the fixtures from the previous run).
 
-With this on, on a project with 195 fixture files, running an individual test (no parallelization) time dropped by over 30% (from 5 to 3.2 seconds on my machine). Running a test file (with parallelization) dropped by about 25% (from 11 to 8.2 seconds).
+As a result, on a project with 195 fixture files, running an individual test (no parallelization) time dropped by over 30% (from 5 to 3.2 seconds on my machine). Running a test file (with parallelization) dropped by about 25% (from 11 to 8.2 seconds).
 
-As a nice bonus, test logs are now free from thousands of lines of db inserts and other db setup gubbins.
+A nice bonus is that test logs are now free from thousands of lines of db inserts and other db setup gubbins.
 
 I've been running this for a long time, and the cache invalidation strategy seems pretty solid. On an off chance you need to force insert fixtures, simply `rm tmp/fixtures_digest*`.
 
