@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    import('../lib/texture.js')
+    import('../lib/texture.mjs')
   }, [])
 
   return (
