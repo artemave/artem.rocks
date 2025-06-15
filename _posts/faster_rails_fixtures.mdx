@@ -42,7 +42,7 @@ Sadly, I wasn't able to come up with anything elegant, so brace yourself for a b
 module PreloadedFixtures
   extend ActiveSupport::Concern
 
-  mattr_accessor :parallel_worker_number
+  mattr_accessor :parallel_worker_number, :enabled
 
   class Cache
     class << self
@@ -54,18 +54,24 @@ module PreloadedFixtures
         digest_path.write(current_digest)
       end
 
+      def clear
+        digest_path.delete if digest_path.exist?
+      end
+
       private
 
       def current_digest
         @current_digest ||= begin
-          files = Dir[Rails.root.join('test', 'fixtures', '**', '*.yml')]
+          files = Rails.root.glob('test/fixtures/**/*.yml')
           file_ids = files.sort.map { |f| "#{File.basename(f)}/#{Digest::SHA1.file(f).hexdigest}" }
           Digest::SHA1.hexdigest(file_ids.join('/'))
         end
       end
 
       def last_digest
-        digest_path.read rescue Errno::ENOENT
+        digest_path.read
+      rescue StandardError
+        Errno::ENOENT
       end
 
       def digest_path
@@ -83,13 +89,23 @@ module PreloadedFixtures
         alias_method :original_insert, :insert
 
         define_method(:insert) do |fixture_sets, connection|
-          if PreloadedFixtures.schema_up_to_date? && PreloadedFixtures::Cache.hit? && fixture_sets.first.model_class.count.positive?
+          if PreloadedFixtures.schema_up_to_date? &&
+             PreloadedFixtures::Cache.hit? &&
+             fixture_sets.first.model_class.count.positive?
+
             puts 'Using preloaded fixtures' if [nil, 0].include?(PreloadedFixtures.parallel_worker_number)
+
+            # Clearing cache while the tests are running ensures that in case of program abort
+            # (e.g. Kernel.exit from debugger) fixtures will be re-inserted next time we're running tests.
+            # Which is what we want since the test db isn't rolled back on abort.
+            #
+            # In case of normal clean exit (where we can safely assume that rollback took place),
+            # cache will be restored in the after_teardown below.
+            PreloadedFixtures::Cache.clear
+
             # This magic line populates primary keys
             fixture_sets.each(&:table_rows)
           else
-            PreloadedFixtures::Cache.record_digest
-
             original_insert(fixture_sets, connection)
           end
         end
@@ -109,6 +125,8 @@ module PreloadedFixtures
 
   class_methods do
     def preloaded_fixtures
+      PreloadedFixtures.enabled = true
+
       ENV['SKIP_TEST_DATABASE_TRUNCATE'] = '1'
       PreloadedFixtures.patch_active_record_fixture_set
 
@@ -118,6 +136,11 @@ module PreloadedFixtures
         PreloadedFixtures.parallel_worker_number = worker_number
       end)
     end
+  end
+
+  def after_teardown
+    PreloadedFixtures::Cache.record_digest if PreloadedFixtures.enabled
+    super
   end
 end
 ```
