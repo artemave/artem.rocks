@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router'
+import remarkFootnotes from 'remark-footnotes'
 import { serialize } from 'next-mdx-remote/serialize'
 import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote'
 import ErrorPage from 'next/error'
@@ -96,6 +97,9 @@ export async function getStaticProps({ params }: Params) {
 
   const mdxSource = await serialize(post.content, {
     mdxOptions: {
+      remarkPlugins: [
+        remarkFootnotes
+      ],
       rehypePlugins: [
         rehypeSlug,
         [
