@@ -1,0 +1,122 @@
+---
+title: "Factories and fixtures"
+excerpt: "Use both factories and fixtures with fixture_farm gem."
+date: '2025-08-12'
+tags:
+  - rails
+  - testing
+---
+
+I think we got it all wrong. It's not fixtures vs factories, it's fixtures *and* factories. In fact, it's factories and fixtures — the order is important. Start off with factories, and then turn the common ones into fixtures.
+
+### A quick primer on the problem
+
+- factories are slow
+- fixtures are hard
+
+Factories are slow because they exercise the model code to create test state. Fixtures, on the other hand, insert records straight into the test database, bypassing model code guardrails (such as validations). They are faster at creating test state[^1], but, for that very reason, it's on the developer to manually make sure the data is valid. Which makes them hard.
+
+So. Neither are superior. Ideally, both should be used where appropriate. E.g., factories for some rare/edge cases, fixtures otherwise. But the problem is that there is no easy way to turn one into another. Once an uncommon test state becomes a staple one, and as it probably involves a dozen of interconnected models (they always do - it's Rails), it's a lot of work to replicate it manually in the fixtures yaml. No one wants to spend their day doing that.
+
+Except now there is a way. Meet [fixture_farm](https://github.com/featurist/fixture_farm), a gem that turns ActiveRecord inserts into fixtures.
+
+### How it looks in practice
+
+Technically, it's simple. Wrap some code in a `record_fixtures` block, and whatever ActiveRecord inserts into the database within that block will appear in fixture files. For example:
+
+```ruby
+record_fixtures { User.create!(name: 'Bob') }
+```
+
+will create the following entry in `test/fixtures/users.yml`:
+
+```yaml
+user_1:
+  name: Bob
+```
+
+This is a cool party trick, but it may not be immediately obvious how this is applicable to factories.
+
+So let's assume that `User.create!` was actually inside a factory method `create_user` and that method was widely used throughout the test suite:
+
+```ruby
+def create_user
+  User.create!
+end
+```
+
+We can now wrap `User.create!` in `record_fixtures` as shown above:
+
+```ruby
+def create_user
+  record_fixtures { User.create! }
+end
+```
+
+Then run any one test that is calling `create_user` and simply swap `record_fixtures { User.create! }` for `users(:user_1)`:
+
+```ruby
+def create_user
+  users(:user_1)
+end
+```
+
+All of the tests that are using `create_user` should continue to pass.
+
+We can also take it one step further and keep the factory part for edge cases. It could look like this:
+
+```ruby
+def create_user(attributes = {})
+  if attributes.empty?
+    users(:user_1)
+  else
+    User.create!(attributes)
+  end
+end
+```
+
+Now, of course `User.create!` is a trivial example, but imagine that a user needs to come with posts, likes, avatar, orders, etc. All of this will be taken care off by `record_fixtures`, correctly referencing parent fixtures, with sensible names. And before you ask, yes, it handles attachments and their blobs too (in an idempotent way - so that blob files can be checked into git).
+
+### Keeping fixtures in check
+
+Generated fixtures are valid to begin with, but it is still on the developer to keep them that way as time goes on. With this kind of power of conjuring up arbitrarily complex fixture trees, it's not hard to imagine a Cambrian explosion of fixtures. So it's a good idea to test fixtures themselves. The simplest thing to do is to make sure fixtures are valid:
+
+```ruby
+test 'fixtures are valid' do
+  offending_records = User.all.select(&:invalid?)
+
+  assert_empty offending_records.index_by(&:fixture_name).transform_values { _1.errors.messages },
+    "The following fixtures are invalid:"
+end
+```
+
+The `fixture_name` method is added by the gem to all ActiveRecord model instances.
+
+Of course, nothing stops us from mixing assertions with generating missing fixtures where suitable:
+
+```ruby
+test 'parent fixtures have children' do
+  offending_records = Parent.where.missing(:children)
+
+  if ENV['GENERATE_FIXTURES']
+    record_fixtures do
+      offending_records.each do |parent|
+        parent.children.create!(name: 'Bob')
+      end
+    end
+  else
+    assert_empty offending_records.map(&:fixture_name),
+      "The following parents don't have children:"
+  end
+end
+```
+
+Assuming there was a parent fixture `dave` that didn't have any children, this test will fail. Now, running the same test with `GENERATE_FIXTURES=1` will generate one child fixture named `dave_child_1`. The test is now passing.
+
+There are probably other useful patterns that I haven't stumbled upon yet. It's all just code at this point.
+
+### Disclaimer
+
+This is an experiment. Although I have tried this on a couple of real-world projects, I have no idea how far it scales, or what rabbit holes it might suck you into. Still, to the best of my knowledge, this is something that wasn't possible before, and as such it might yield or lead to some value at some point.
+
+[^1]: Check out [my previoius post](https://artem.rocks/posts/faster_rails_fixtures) to make fixtures even faster.
