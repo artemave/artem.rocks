@@ -16,7 +16,7 @@ I think we got it all wrong. It's not fixtures vs factories, it's fixtures *and*
 
 Factories are slow because they exercise the model code to create test state. Fixtures, on the other hand, insert records straight into the test database, bypassing model code guardrails (such as validations). They are faster at creating test state[^1], but, for that very reason, it's on the developer to manually make sure the data is valid. Which makes them hard.
 
-So. Neither are superior. Ideally, both should be used where appropriate. E.g., factories for some rare/edge cases, fixtures otherwise. But the problem is that there is no easy way to turn one into another. Once an uncommon test state becomes a staple one, and as it probably involves a dozen of interconnected models (they always do - it's Rails), it's a lot of work to replicate it manually in the fixtures yaml. No one wants to spend their day doing that.
+So. Neither are superior. Ideally, both should be used where appropriate. E.g., factories for some rare/edge cases, fixtures otherwise. But the problem is that there is no easy way to turn one into another. Once an uncommon test state becomes a staple one, and as it probably involves a dozen of interconnected models, it's a lot of work to replicate it manually in the fixtures yaml. No one wants to spend their day doing that.
 
 Except now there is a way. Meet [fixture_farm](https://github.com/featurist/fixture_farm), a gem that turns ActiveRecord inserts into fixtures.
 
@@ -53,7 +53,7 @@ def create_user
 end
 ```
 
-Then run any one test that is calling `create_user` and simply swap `record_fixtures { User.create! }` for `users(:user_1)`:
+Then run any one test that is calling `create_user`, observe new fixture in `users.yml`, and then simply swap `record_fixtures { User.create! }` for `users(:user_1)`:
 
 ```ruby
 def create_user
