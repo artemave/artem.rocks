@@ -6,7 +6,7 @@ import Head from 'next/head'
 
 const extraMarkdownCSS = `
   pre code.hljs {
-    padding: 1em 0.5em !important;
+    padding: 0.5em !important;
   }
 `
 
@@ -26,7 +26,7 @@ const CodeHighlightWithCopy = ({children, ...props}) => {
   }, [copied])
 
   return (
-    <div className="relative group mb-12">
+    <div className="relative group mb-8">
       <Head>
         <style>{extraMarkdownCSS}</style>
       </Head>

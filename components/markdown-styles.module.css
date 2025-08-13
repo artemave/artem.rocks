@@ -6,7 +6,7 @@
 .markdown ul,
 .markdown ol,
 .markdown blockquote {
-  @apply mt-6 mb-8;
+  @apply mt-6 mb-2;
 }
 
 .markdown blockquote {
@@ -32,9 +32,15 @@
   @apply ml-4;
 }
 
-.markdown p code,
-.markdown p em {
+.markdown p code {
   word-wrap: break-word;
+  background-color: gainsboro;
+  padding: 0 3px;
+  @apply rounded-sm;
+}
+
+.markdown code {
+  @apply sm:rounded;
 }
 
 .markdown video {
