@@ -7,16 +7,16 @@ tags:
   - testing
 ---
 
-I think we got it all wrong. It's not fixtures vs factories, it's fixtures *and* factories. In fact, it's factories and fixtures — the order is important. Start off with factories, and then turn the common ones into fixtures.
+I think we got it all wrong. It's not fixtures vs factories, it's fixtures *and* factories. In fact, it's factories and then fixtures — the order is important. Start off with factories, and then turn the common ones into fixtures.
 
 ### A quick primer on the problem
 
 - factories are slow
 - fixtures are hard
 
-Factories are slow because they exercise the model code to create test state. Fixtures, on the other hand, insert records straight into the test database, bypassing model code guardrails (such as validations). They are faster at creating test state[^1], but, for that very reason, it's on the developer to manually make sure the data is valid. Which makes them hard.
+Factories are slow because they exercise the model code to create test state. Fixtures, on the other hand, insert records straight into the test database using sql, bypassing model code. They are faster at creating test state[^1], but, as there are not model guardrails (e.g. validations), it's on the developer to manually make sure the data is valid. Which makes them hard.
 
-So. Neither are superior. Ideally, both should be used where appropriate. E.g., factories for some rare/edge cases, fixtures otherwise. But the problem is that there is no easy way to turn one into another. Once an uncommon test state becomes a staple one, and as it probably involves a dozen of interconnected models, it's a lot of work to replicate it manually in the fixtures yaml. No one wants to spend their day doing that.
+So. Neither are superior. You might be better off using factories for some rare/edge cases (small performance impact across the board) and resort to fixtures otherwise. But the problem is that there is no easy way to turn one into another. Everything starts small and by the time it graduates into something more common, there are likely lots of interconnected models and replicating them manually in fixtures yaml is a hard work. No one wants to spend their day doing that.
 
 Except now there is a way. Meet [fixture_farm](https://github.com/featurist/fixture_farm), a gem that turns ActiveRecord inserts into fixtures.
 
