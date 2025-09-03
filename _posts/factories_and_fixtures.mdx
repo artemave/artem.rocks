@@ -14,9 +14,9 @@ I think we got it all wrong. It's not fixtures vs factories, it's fixtures *and*
 - factories are slow
 - fixtures are hard
 
-Factories are slow because they exercise the model code to create test state. Fixtures, on the other hand, insert records straight into the test database using sql, bypassing model code. They are faster at creating test state[^1], but, as there are not model guardrails (e.g. validations), it's on the developer to manually make sure the data is valid. Which makes them hard.
+Factories are slow because they exercise the model code to create test state. Fixtures, on the other hand, insert records straight into the test database using sql, bypassing model code. This, coupled with the fact that they are only inserted once before all tests, makes them a faster option[^1], but, as there are no model guardrails (e.g. validations), it's on the developer to manually make sure the data is valid. And that makes them hard.
 
-So. Neither are superior. You might be better off using factories for some rare/edge cases (small performance impact across the board) and resort to fixtures otherwise. But the problem is that there is no easy way to turn one into another. Everything starts small and by the time it graduates into something more common, there are likely lots of interconnected models and replicating them manually in fixtures yaml is a hard work. No one wants to spend their day doing that.
+So. Neither are superior. You might be better off using factories for some rare/edge cases (small performance impact across the board) and resort to fixtures otherwise. But the problem is that there is no easy way to turn one into another. Everything starts small and by the time it graduates into something more common, there are likely lots of interconnected models involved and replicating them manually in fixtures yaml is a hard work. No one wants to spend their day doing that.
 
 Except now there is a way. Meet [fixture_farm](https://github.com/featurist/fixture_farm), a gem that turns ActiveRecord inserts into fixtures.
 
@@ -35,7 +35,7 @@ user_1:
   name: Bob
 ```
 
-This is a cool party trick, but it may not be immediately obvious how this is applicable to factories.
+This is no doubt fancy, but it may not be immediately obvious what's it got to do with factories.
 
 So let's assume that `User.create!` was actually inside a factory method `create_user` and that method was widely used throughout the test suite:
 
@@ -61,7 +61,7 @@ def create_user
 end
 ```
 
-All of the tests that are using `create_user` should continue to pass.
+All of the tests that are calling `create_user` should continue to pass. Except now they are using the fixture instead.
 
 We can also take it one step further and keep the factory part for edge cases. It could look like this:
 
@@ -119,4 +119,4 @@ There are probably other useful patterns that I haven't stumbled upon yet. It's 
 
 This is an experiment. Although I have tried this on a couple of real-world projects, I have no idea how far it scales, or what rabbit holes it might suck you into. Still, to the best of my knowledge, this is something that wasn't possible before, and as such it might yield or lead to some value at some point.
 
-[^1]: Check out [my previoius post](https://artem.rocks/posts/faster_rails_fixtures) to make fixtures even faster.
+[^1]: Check out [my previous post](https://artem.rocks/posts/faster_rails_fixtures) to make fixtures even faster.
