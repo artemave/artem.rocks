@@ -76,6 +76,7 @@ jobs:
       - name: Build with Next.js
         env:
           SITE_URL: 'https://artem.rocks'
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Static HTML export with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next export
