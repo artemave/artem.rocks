@@ -10,7 +10,6 @@ const Layout = ({ children }: Props) => {
   return (
     <>
       <Meta />
-      <div id="texture"></div>
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex grow items-stretch flex-col">{children}</main>

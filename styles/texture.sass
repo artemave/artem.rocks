@@ -1,21 +1,6 @@
 html
   min-height: 100%
-  background: radial-gradient(ellipse at bottom, #5091DD 0%, #030617 100%)
+  background: var(--grid, none) 0 0 / var(--grid-size, auto) var(--grid-size, auto), radial-gradient(ellipse at bottom, #5091DD 0%, #030617 100%)
 
 body
   min-height: 100vh
-
-$borderWeight: 1px
-
-#texture
-  width: 100%
-  height: $borderWeight
-  box-shadow: var(--horizontal-lines)
-
-  &:after
-    content: ""
-    position: absolute
-    width: $borderWeight
-    height: var(--document-height, 100vh)
-    box-shadow: var(--vertical-lines)
-    z-index: -100
