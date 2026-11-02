@@ -10,6 +10,8 @@ import {
 } from "@nextui-org/react"
 import { useRouter } from "next/router"
 import React from "react"
+import { FaMoon, FaSun } from "react-icons/fa6"
+import useColorScheme from "../lib/useColorScheme"
 
 const MyNavBar = extendVariants(Navbar, {
   variants: {
@@ -58,6 +60,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
   const router = useRouter()
   const currentPath = router.pathname
+  const [colorScheme, toggleColorScheme] = useColorScheme()
 
   function renderMenuItemLink(item: { url: string, title: string }): React.ReactNode {
     const isActive = currentPath === item.url
@@ -81,6 +84,17 @@ const Header = () => {
         {
           menuItems.map((item, index) => <NavbarItem key={index} className="ml-8">{ renderMenuItemLink(item ) }</NavbarItem>)
         }
+      </NavbarContent>
+      <NavbarContent justify="end">
+        {colorScheme && (
+          <button
+            onClick={toggleColorScheme}
+            aria-label={colorScheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="text-slate-100 hover:text-slate-300 p-2"
+          >
+            {colorScheme === 'dark' ? <FaSun className="w-5 h-5" /> : <FaMoon className="w-5 h-5" />}
+          </button>
+        )}
       </NavbarContent>
       <NavbarMenu>
         {

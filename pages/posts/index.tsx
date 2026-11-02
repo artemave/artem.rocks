@@ -17,7 +17,7 @@ const BlogIndexEntry = ({ post }: { post: Post, key: number }) => {
   return (
     <div className='mb-10'>
       <h2 className="mb-2">
-        <Link {...linkProps} size='lg' className='font-medium text-xl text-slate-600' href={url}>
+        <Link {...linkProps} size='lg' className='font-medium text-xl text-slate-600 dark:text-slate-200' href={url}>
           {post.title}
         </Link>
       </h2>

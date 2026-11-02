@@ -20,6 +20,7 @@ import mdStyles from '../../components/markdown-styles.module.css'
 import CodeHighlightWithCopy from '../../components/CodeHighlightWithCopy'
 import Giscus from '@giscus/react'
 import H1 from '../../components/H1'
+import useColorScheme from '../../lib/useColorScheme'
 
 type Props = {
   post: Post
@@ -33,6 +34,7 @@ const components = {
 
 export default function Post({ post, mdxSource }: Props) {
   const router = useRouter()
+  const [colorScheme] = useColorScheme()
   if (!router.isFallback && !post?.slug) {
     return <ErrorPage statusCode={404} />
   }
@@ -53,7 +55,7 @@ export default function Post({ post, mdxSource }: Props) {
                 <div className={mdStyles.markdown}>
                   <MDXRemote {...mdxSource} components={components} />
                 </div>
-                <Giscus
+                {colorScheme && <Giscus
                   id='comments'
                   repo="artemave/artem.rocks"
                   repoId="R_kgDOKXBrbg"
@@ -64,10 +66,10 @@ export default function Post({ post, mdxSource }: Props) {
                   reactionsEnabled="1"
                   emitMetadata="0"
                   inputPosition="bottom"
-                  theme="light"
+                  theme={colorScheme}
                   lang="en"
                   loading="lazy"
-                />
+                />}
               </article>
             </>
           )}

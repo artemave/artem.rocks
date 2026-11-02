@@ -1,7 +1,7 @@
 const SocialLink = ({ href, icon: Icon, className = undefined }) => {
   return (
     <a href={href} target='_blank' className={className}>
-      <Icon className='invert-[.9] w-10 h-10 hover:invert-[.8]' />
+      <Icon className='text-slate-200 w-10 h-10 hover:text-slate-300' />
     </a>
   )
 }

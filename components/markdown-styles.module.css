@@ -39,6 +39,14 @@
   @apply rounded-sm;
 }
 
+:global(.dark) .markdown blockquote {
+  @apply border-slate-700;
+}
+
+:global(.dark) .markdown p code {
+  @apply bg-slate-800;
+}
+
 .markdown code {
   @apply sm:rounded;
 }
