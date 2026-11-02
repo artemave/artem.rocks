@@ -22,7 +22,9 @@ const Intro = () => {
       </div>
       <div className='md:ml-6 mt-6 md:mt-7 text-center md:text-left'>
         <div className='text-4xl tracking-tight text-center sm:text-left md:tracking-tighter leading-tight font-medium my-6 pl-2'>Hey, I am <span data-glitch="Artem" className='glitch'>Artem</span></div>
-        <p className='text-lg px-2'>Web developer and OSS tinkerer.</p>
+        <div className='backdrop-blur-[0.15px] md:backdrop-blur-[0.5px] px-2 rounded-lg'>
+          <p className='text-lg'>Web developer and OSS tinkerer.</p>
+        </div>
       </div>
     </section>
   )
