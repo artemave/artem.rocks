@@ -16,8 +16,8 @@ export default function Index() {
         <Intro />
         <Content>
           <H1>About</H1>
-          <p>I am a seasoned full-stack web developer with over fifteen years of experience. Throughout my career, I mainly went back and forth between Rails and Node, with occasional forays into SPAs. I worked with a variety of clients - from small startups to enterprises.</p>
-          <p>I like to understand the business before coding. I like to translate this understanding into automated scenarios and tests. I prefer clear over clever. I like to deploy fast, small, and often. I like to know about problems in production before the users. I like to talk to the users. I like to talk to the business. I like to talk to the colleagues and pair programming. And, above all, I like coding - it's not just a job, it's a passion.</p>
+          <p>I'm a full-stack web developer with over fifteen years of experience. I've mainly moved between Rails and Node, with occasional forays into SPAs, and worked with clients ranging from small startups to enterprises. These days I write most of my code through AI coding agents rather than by hand.</p>
+          <p>I like to understand the business before any code gets written, and to turn that understanding into automated scenarios and tests. With agents writing the code, this matters more than ever: tests and clear specs are how I steer them and check their work. I prefer clear over clever. I like to deploy fast, small, and often, and to know about problems in production before users do. I like talking to users, to the business, and to colleagues. And above all, I like building software.</p>
           <ButtonGroup className='mt-12'>
             <ButtonLink href='https://cv.artem.rocks'>View my CV</ButtonLink>
           </ButtonGroup>
