@@ -24,12 +24,12 @@
 
 .markdown ul {
   list-style: disc;
-  @apply ml-4;
+  @apply ml-8 mt-2;
 }
 
 .markdown ol {
   list-style: auto;
-  @apply ml-4;
+  @apply ml-8 mt-2;
 }
 
 .markdown p code {
