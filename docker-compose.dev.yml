@@ -2,9 +2,7 @@ include:
   - ${HOME}/projects/dotfiles/devcontainer/docker-compose.yml
 services:
   devcontainer:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
+    image: dev-base:latest
     command:
       - bash
       - -lc
