@@ -22,6 +22,11 @@
   @apply text-2xl mt-8 mb-4 leading-snug;
 }
 
+.markdown h2 a,
+.markdown h3 a {
+  @apply no-underline hover:underline;
+}
+
 .markdown ul {
   list-style: disc;
   @apply ml-8 mt-2;
