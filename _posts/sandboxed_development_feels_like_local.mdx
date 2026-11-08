@@ -1,0 +1,121 @@
+---
+title: "I made sandboxed development feel like local development"
+excerpt: "When working in a container is as convenient as working locally, security comes almost for free."
+date: '2026-11-08'
+tags:
+  - tools
+  - security
+---
+
+Recent high-profile supply-chain attacks renewed interest in development security. So I figured, while it lasts, I'll take this opportunity to describe the way I do it and to promote a relevant tool I wrote along the way.
+
+Most folks like the idea of security, but few are ready to pay the usability price. Remember the time when you were saying "yes" sans arrêt for claude to do its thing? Yeah, how long did that last. I am with most folks on this one, and I'd have nothing to say on the matter if not for a timely accident of developing [hop](https://github.com/artemave/hop).
+
+## hop
+
+hop started out as an attempt to move off tmux as a project session manager. I wanted browser windows in sessions as well, not just terminals. With hop instead of tmux, each project gets a [sway](https://swaywm.org/) workspace containing its terminals, editor, browser, or whatever else belongs to it. This worked out much better than I'd expected and revealed a whole bunch ux improvements. I think I'd stop using computers if I had to go back to tmux one day.
+
+Anyway. One particular feature of hop is relevant to the topic of security: the ability to run session terminals in an arbitrarily defined "backend". For example, in a podman container. What hop takes care of is hiding all usability aspects of not being on the host machine:
+- new terminals automatically starting inside the container
+- file path translation to click-open files
+- opening binary files (e.g. images) with the host viewer
+- port/hostname translation so that host browser can browse container urls
+- clipboard integration (including images)
+- "zero key" session management (switch/create/destroy)
+
+As a result, there's very little difference between host and container sessions (or remote sessions running over ssh for that matter).
+
+## To the point (of security)
+
+This may be obvious, but let's recap what working in a container buys in terms of security. At the very least, it comes with file system isolation: a compromised container cannot see your host files (except those explicitly mounted). In addition to that, a container exposes explicit environment boundaries (mounts, network, variables) that can be tightened to any degree of strictness. Your paranoia may vary at very little cost.
+
+Here's my setup, to demonstrate how little there is to it. It's far from extreme: on top of file system isolation, it keeps API tokens out of the container. It does share a few things with the host in the name of ux (e.g. browser profile), so treat it as a starting point rather than a fortress.
+
+The setup is based on podman-compose. Docker compose would work too, but podman runs rootless and is docker-compatible, so that's some extra security for free. A [shared compose file](https://github.com/artemave/dotfiles/blob/HEAD/devcontainer/docker-compose.yml) lives in my dotfiles, and each project opts in with its own compose file that includes it. This is [the one for this site](https://github.com/artemave/artem.rocks/blob/HEAD/docker-compose.dev.yml):
+
+```yaml
+include:
+  - ${HOME}/projects/dotfiles/devcontainer/docker-compose.yml
+services:
+  devcontainer:
+    # built by the `up` script in `prepare` below
+    image: dev-base:latest
+    volumes:
+      # caching modules for speed
+      - node_modules:/workspace/node_modules
+    ports:
+      - 3000
+volumes:
+  node_modules:
+```
+
+hop picks it up via a backend definition in its [config](https://github.com/artemave/dotfiles/blob/HEAD/.config/hop/config.toml):
+
+```toml
+[backends.devcontainer]
+# the aforementioned opt in
+activate              = "test -f docker-compose.dev.yml"
+prepare               = [
+  "$HOME/projects/dotfiles/devcontainer/up",
+  # plus a couple of commands that copy hop's helpers into the container
+]
+teardown              = "podman-compose -f docker-compose.dev.yml down"
+# this is used to start shells and interactive commands (nvim, claude, etc.)
+interactive_prefix    = "podman-compose -f docker-compose.dev.yml exec devcontainer"
+# this is for hop's queries e.g. path translation
+noninteractive_prefix = "podman-compose -f docker-compose.dev.yml exec -T devcontainer"
+```
+
+The shared file's interesting bit is the integration between the session container and a [mitmproxy](https://www.mitmproxy.org/) sidecar. The session container only receives stub tokens for github, claude and openai, yet everything that uses them works as normal. Bonus ux point: `gh` and `claude` are logged in when the container starts.
+
+```yaml
+services:
+  devcontainer:
+    volumes:
+      - .:/workspace
+      - proxy-ca:/proxy-ca:ro
+    environment:
+      GH_TOKEN: proxy-secret-github
+      CLAUDE_CODE_OAUTH_TOKEN: proxy-secret-claude
+      OPENAI_API_KEY: proxy-secret-openai
+      HTTPS_PROXY: http://secrets-proxy:8080
+      NODE_EXTRA_CA_CERTS: /proxy-ca/mitmproxy-ca-cert.pem
+  secrets-proxy:
+    image: docker.io/mitmproxy/mitmproxy:12.2.3
+    entrypoint: ["mitmdump", "--listen-port", "8080", "--set", "confdir=/proxy-ca", "-s", "/addon/inject.py"]
+    volumes:
+      - ${HOME}/projects/dotfiles/devcontainer/secrets-proxy/inject.py:/addon/inject.py:ro
+      - ${XDG_RUNTIME_DIR}/devcontainer-secrets:/run/secrets:ro
+      - proxy-ca:/proxy-ca
+```
+
+Before the stack comes up, [`up`](https://github.com/artemave/dotfiles/blob/HEAD/devcontainer/up) runs a small [script](https://github.com/artemave/dotfiles/blob/HEAD/devcontainer/secrets-proxy/refresh-secrets) that pulls the real tokens from the host keyring into a tmpfs directory that only the proxy mounts.
+
+And the [proxy addon](https://github.com/artemave/dotfiles/blob/HEAD/devcontainer/secrets-proxy/inject.py) swaps stubs for real tokens, but only on requests to the hosts each token belongs to. Here's the gist of it:
+
+```python
+HOSTS = {
+    "openai": ("api.openai.com",),
+    "claude": ("api.anthropic.com",),
+    "github": ("api.github.com", "uploads.github.com", "github.com"),
+}
+
+def tls_clienthello(data):
+    # Only intercept hosts that need a secret; everything else is tunnelled untouched.
+    if not _secrets_for(data.client_hello.sni):
+        data.ignore_connection = True
+
+def request(flow):
+    for name in _secrets_for(flow.request.pretty_host):
+        secret = (SECRETS_DIR / name).read_text().strip()
+        for key, value in flow.request.headers.items():
+            flow.request.headers[key] = value.replace(f"proxy-secret-{name}", secret)
+```
+
+Note that a compromised container can still use the tokens through the proxy while it's running. It just can't walk away with them.
+
+## Bottom line
+
+Again, the point is that none of this affects my day-to-day workflow. I still have my editor, browser, terminals, clipboard, all behaving exactly as if I were working locally. hop doesn't implement any of the security measures. It just makes working inside an isolated environment so convenient that I no longer have much reason to work outside one. You can absolutely have sandbox containers and do the mitmproxy trick without a tool like hop, but the friction would be a lot more noticable.
+
+I realise most folks won't be able to use hop - it requires rather extravagant tool choices (notably, sway) - but it might give people some ideas about what's possible. Maybe even plant a seed of dissatisfaction with their own tools and prompt some to go out and improve things.
