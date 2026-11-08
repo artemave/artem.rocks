@@ -18,20 +18,20 @@ const MyNavBar = extendVariants(Navbar, {
     isBlurred: {
       true: {
         base: [
-          "backdrop-blur-none",
+          "backdrop-filter-none",
           "data-[menu-open=true]:bg-slate-800",
           "data-[menu-open=true]:backdrop-saturate-1",
           "data-[menu-open=true]:transition-none",
           'transition-colors',
           'delay-300',
           "bg-transparent",
-          "backdrop-saturate-1",
           '-mt-px',
           'max-w-3xl',
           'pl-2',
           'pr-2',
           'mx-auto'
         ],
+        wrapper: ['sm:px-0'],
         menu: ["backdrop-saturate-1", 'bg-slate-800'],
       }
     }
@@ -79,10 +79,8 @@ const Header = () => {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="sm:hidden"
         />
-      </NavbarContent>
-      <NavbarContent className="hidden sm:flex gap-4" justify="center">
         {
-          menuItems.map((item, index) => <NavbarItem key={index} className="ml-8">{ renderMenuItemLink(item ) }</NavbarItem>)
+          menuItems.map((item, index) => <NavbarItem key={index} className={`hidden sm:block ${index === 0 ? '-ml-2' : 'ml-4'} backdrop-blur-[0.15px] md:backdrop-blur-[0.5px] px-2 rounded-lg`}>{ renderMenuItemLink(item ) }</NavbarItem>)
         }
       </NavbarContent>
       <NavbarContent justify="end">
@@ -90,7 +88,7 @@ const Header = () => {
           <button
             onClick={toggleColorScheme}
             aria-label={colorScheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="text-slate-100 hover:text-slate-300 p-2"
+            className="text-slate-100 hover:text-slate-300 p-2 -mr-2"
           >
             {colorScheme === 'dark' ? <FaSun className="w-5 h-5" /> : <FaMoon className="w-5 h-5" />}
           </button>

@@ -1,4 +1,0 @@
-# syntax=docker/dockerfile:1.5
-FROM dev-base:latest
-
-WORKDIR /workspace
