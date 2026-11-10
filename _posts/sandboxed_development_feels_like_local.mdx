@@ -1,7 +1,7 @@
 ---
 title: "I made sandboxed development feel like local development"
 excerpt: "When working in a container is as convenient as working locally, security comes almost for free."
-date: '2026-11-08'
+date: '2026-11-09'
 tags:
   - tools
   - security
@@ -13,7 +13,7 @@ Most folks like the idea of security, but few are ready to pay the usability pri
 
 ## hop
 
-hop started out as an attempt to move off tmux as a project session manager. I wanted browser windows in sessions as well, not just terminals. With hop instead of tmux, each project gets a [sway](https://swaywm.org/) workspace containing its terminals, editor, browser, or whatever else belongs to it. This worked out much better than I'd expected and revealed a whole bunch ux improvements. I think I'd stop using computers if I had to go back to tmux one day.
+hop started out as an attempt to move off tmux as a project session manager. I wanted browser windows in sessions as well, not just terminals. With hop instead of tmux, each project gets a [sway](https://swaywm.org/) workspace containing its terminals, editor, browser, or whatever else belongs to it (watch a quick [demo](https://www.youtube.com/watch?v=P5tbaxBc4_A)). This worked out much better than I'd expected and revealed a whole bunch of ux improvements. I think I'd stop using computers if I had to go back to tmux one day.
 
 Anyway. One particular feature of hop is relevant to the topic of security: the ability to run session terminals in an arbitrarily defined "backend". For example, in a podman container. What hop takes care of is hiding all usability aspects of not being on the host machine:
 - new terminals automatically starting inside the container
@@ -82,9 +82,11 @@ services:
       NODE_EXTRA_CA_CERTS: /proxy-ca/mitmproxy-ca-cert.pem
   secrets-proxy:
     image: docker.io/mitmproxy/mitmproxy:12.2.3
-    entrypoint: ["mitmdump", "--listen-port", "8080", "--set", "confdir=/proxy-ca", "-s", "/addon/inject.py"]
+    entrypoint: ["mitmdump", "--listen-port", "8080", "--set", "confdir=/proxy-ca", "-s", "/addon/github_policy.py", "-s", "/addon/inject.py"]
+    environment:
+      GITHUB_REPO: ${GITHUB_REPO:-}
     volumes:
-      - ${HOME}/projects/dotfiles/devcontainer/secrets-proxy/inject.py:/addon/inject.py:ro
+      - ${HOME}/projects/dotfiles/devcontainer/secrets-proxy:/addon:ro
       - ${XDG_RUNTIME_DIR}/devcontainer-secrets:/run/secrets:ro
       - proxy-ca:/proxy-ca
 ```
@@ -114,8 +116,12 @@ def request(flow):
 
 Note that a compromised container can still use the tokens through the proxy while it's running. It just can't walk away with them.
 
+It can, however, be limited in what it can do with them. Another [addon](https://github.com/artemave/dotfiles/blob/HEAD/devcontainer/secrets-proxy/github_policy.py) confines the github token (which, in the name of easy ux, is a god personal access token that has access to everything) to the session's repository. Push, pull and an allowlist of api calls (prs, issues, comments, releases, ci reruns) go through. Everything else - other repositories, deploy keys, webhooks, actions secrets, graphql - gets the same response github gives to a token without access, so tools fail the way they normally would.
+
+It would be nice if github api allowed creating a scoped _personal_ access token per session, but it doesn't, so it had to be a somewhat hacky solution - an invasive proxy that second-guesses every request and essentially cripples `gh` cli. Still, agents seem to know their way around the github rest api directly, so not a show stopper.
+
 ## Bottom line
 
-Again, the point is that none of this affects my day-to-day workflow. I still have my editor, browser, terminals, clipboard, all behaving exactly as if I were working locally. hop doesn't implement any of the security measures. It just makes working inside an isolated environment so convenient that I no longer have much reason to work outside one. You can absolutely have sandbox containers and do the mitmproxy trick without a tool like hop, but the friction would be a lot more noticable.
+Again, the point is that none of this affects my day-to-day workflow. I still have my editor, browser, terminals, clipboard, all behaving exactly as if I were working locally. hop doesn't implement any of the security measures. It just makes working inside an isolated environment so convenient that I no longer have much reason to work outside one. You can absolutely have sandbox containers and do the mitmproxy trick without a tool like hop, but the friction would be a lot more noticeable.
 
-I realise most folks won't be able to use hop - it requires rather extravagant tool choices (notably, sway) - but it might give people some ideas about what's possible. Maybe even plant a seed of dissatisfaction with their own tools and prompt some to go out and improve things.
+I realise most folks won't be able to use hop - it requires rather extravagant tool choices (notably, sway). If you live in vscode though, its [dev containers](https://code.visualstudio.com/docs/devcontainers/containers) get you a good part of the way, as long as you turn off some insecure defaults such as ssh agent forwarding. Either way, I hope this gives people some ideas about what's possible. Maybe even plant a seed of dissatisfaction with their own tools and prompt some to go out and improve things.
